@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Titolazione Potenziometrica — Acquisizione ed Elaborazione</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230c0e14'/%3E%3Cpath d='M12 4h8v2h-1.5v7.2l4.8 9.6c.9 1.8-.3 3.8-2.3 3.8H10.9c-2 0-3.2-2-2.3-3.8l4.8-9.6V6H12V4z' fill='none' stroke='%236aa9ff' stroke-width='1.6' stroke-linejoin='round'/%3E%3Cpath d='M10.3 19.5h11.3' stroke='%236aa9ff' stroke-width='1.4'/%3E%3Ccircle cx='16' cy='23.5' r='1.4' fill='%23e0a72c'/%3E%3Cline x1='16' y1='2' x2='16' y2='15' stroke='%23ff6b6b' stroke-width='1.8' stroke-linecap='round'/%3E%3Ccircle cx='16' cy='2' r='1.6' fill='%23ff6b6b'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#0f1117; --panel:#171a23; --panel2:#1e2230; --border:#2a2f3f;
+    --text:#e6e8ee; --muted:#9aa2b1; --accent:#4f8cff; --accent2:#ff6b6b;
+    --green:#4caf7d; --amber:#e0a72c;
+  }
+  *{box-sizing:border-box;}
+  html, body{height:100%; margin:0;}
+  body{
+    font-family:'Segoe UI',Roboto,Arial,sans-serif; background:var(--bg); color:var(--text);
+    padding:10px 20px 10px; display:flex; flex-direction:column; overflow:hidden;
+  }
+  h1{font-size:1.7rem; margin:0 0 4px;}
+  h2{font-size:0.95rem; margin:0 0 6px; color:var(--accent);}
+  .subtitle{color:var(--muted); margin-top:0; margin-bottom:10px; font-size:0.78rem;}
+  .grid{
+    display:grid; grid-template-columns:340px 1fr; gap:14px;
+    flex:1; min-height:0;
+  }
+  .grid > div{min-height:0; display:flex; flex-direction:column;}
+  .col-left{overflow:hidden;}
+  .col-left .panel:first-child, .col-left .panel:nth-child(2){flex:0 0 auto;}
+  .tablepanel{flex:1 1 auto; min-height:0; display:flex; flex-direction:column; margin-bottom:0;}
+  .tablewrap{flex:1; min-height:0; overflow-y:auto; border:1px solid var(--border); border-radius:6px;}
+  .tablewrap::-webkit-scrollbar{width:7px;}
+  .tablewrap::-webkit-scrollbar-thumb{background:var(--border); border-radius:4px;}
+  .panel{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:14px 16px; margin-bottom:14px;}
+  label{display:block; font-size:0.8rem; color:var(--muted); margin-bottom:3px; margin-top:8px;}
+  input[type=number], input[type=text], select{
+    width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--border);
+    background:var(--panel2); color:var(--text); font-size:0.95rem;
+  }
+  button{
+    background:var(--accent); color:white; border:none; padding:9px 16px; border-radius:6px;
+    cursor:pointer; font-size:0.9rem; margin-top:12px; margin-right:8px;
+  }
+  button:hover{opacity:0.88;}
+  button.secondary{background:var(--panel2); border:1px solid var(--border); color:var(--text);}
+  button.danger{background:var(--accent2);}
+  button.small{padding:4px 10px; font-size:0.78rem; margin-top:0;}
+  table{width:100%; border-collapse:collapse; font-size:0.85rem; margin-top:10px;}
+  th,td{padding:6px 8px; border-bottom:1px solid var(--border); text-align:right;}
+  th{color:var(--muted); font-weight:600; text-align:right;}
+  td:first-child, th:first-child{text-align:left;}
+  tbody tr:hover{background:var(--panel2);}
+  .tablewrap{height:220px; overflow-y:auto; border:1px solid var(--border); border-radius:6px;}
+  canvas{background:#0c0e14; border:1px solid var(--border); border-radius:8px; width:100%; display:block;}
+  .row{display:flex; gap:10px; align-items:flex-end;}
+  .row > div{flex:1;}
+  .row label{min-height:2.6em; display:flex; align-items:flex-end;}
+  .badge{display:inline-block; padding:2px 8px; border-radius:12px; font-size:0.72rem; margin-left:6px;}
+  .badge.ok{background:rgba(76,175,125,0.18); color:var(--green);}
+  .badge.warn{background:rgba(224,167,44,0.18); color:var(--amber);}
+  .hint{font-size:0.78rem; color:var(--muted); margin-top:6px; line-height:1.4;}
+  .results{font-size:0.88rem; line-height:1.7;}
+  .results b{color:var(--accent);}
+  .gran-block{border:1px solid var(--border); border-radius:8px; padding:12px 14px; margin-bottom:14px; background:var(--panel2); display:flex; flex-direction:column; min-height:0; align-items:stretch;}
+  .gran-block > *{flex:0 0 auto;}
+  .gran-block button{align-self:flex-start;}
+  .gran-block canvas{height:300px; flex:none;}
+  .gran-block h3{margin:0 0 8px; font-size:0.95rem;}
+  .flexhead{display:flex; justify-content:space-between; align-items:center;}
+  .chip{font-size:0.72rem; padding:1px 7px; border:1px solid var(--border); border-radius:10px; margin:2px; display:inline-block; cursor:pointer; user-select:none;}
+  .chip.sel{background:var(--accent); border-color:var(--accent); color:white;}
+  footer{margin-top:30px; color:var(--muted); font-size:0.78rem; text-align:center;}
+  .toolbar{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;}
+  .kv{display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px dashed var(--border); font-size:0.85rem;}
+  .col-right{overflow:hidden;}
+  .tabbar{display:flex; gap:4px; flex:0 0 auto; margin-bottom:8px; flex-wrap:wrap;}
+  .tabbtn{
+    background:var(--panel2); border:1px solid var(--border); color:var(--muted);
+    padding:6px 12px; border-radius:6px 6px 0 0; cursor:pointer; font-size:0.82rem; margin:0;
+  }
+  .tabbtn.active{background:var(--panel); color:var(--accent); border-bottom:2px solid var(--accent); font-weight:600;}
+  .tabbtn:disabled{opacity:0.4; cursor:not-allowed;}
+  .tabcontent{flex:1; min-height:0; overflow-y:auto; display:none;}
+  .tabcontent.active{display:flex; flex-direction:column;}
+  .tabcontent::-webkit-scrollbar{width:7px;}
+  .tabcontent::-webkit-scrollbar-thumb{background:var(--border); border-radius:4px;}
+  .tabcontent .panel{flex:1; min-height:0; display:flex; flex-direction:column;}
+  .tabcontent canvas{flex:1; min-height:0;}
+  .elab-scroll{overflow-y:auto;}
+  .subsection{border-top:1px solid var(--border); padding-top:16px; margin-top:16px;}
+  .subsection:first-child{border-top:none; padding-top:0; margin-top:0;}
+  .subhead{font-size:0.95rem; margin:0 0 8px; color:var(--accent);}
+  .subsection canvas{height:340px; flex:none;}
+  .crosshair-tip{
+    position:absolute; background:rgba(20,22,30,0.95); border:1px solid var(--border); border-radius:6px;
+    padding:5px 9px; font-size:0.78rem; color:var(--text); pointer-events:none; white-space:nowrap; z-index:20;
+    box-shadow:0 2px 8px rgba(0,0,0,0.4);
+  }
+  .chart-wrap{position:relative;}
+  .zoom-selbox{
+    position:absolute; border:1px solid var(--accent); background:rgba(79,140,255,0.15);
+    pointer-events:none; z-index:15;
+  }
+  .zoom-reset-btn{
+    position:absolute; top:8px; right:8px; z-index:20; font-size:0.72rem; padding:4px 9px;
+    background:rgba(20,22,30,0.9); color:var(--text); border:1px solid var(--border); border-radius:6px;
+    cursor:pointer; display:none; align-items:center; gap:4px;
+  }
+  .zoom-reset-btn:hover{ background:rgba(30,34,44,0.95); border-color:var(--accent); }
+</style>
+</head>
+<body>
+
+<h1>Titolazione Potenziometrica — Acquisizione ed Elaborazione</h1>
+<p class="subtitle">Inserisci in tempo reale i volumi di titolante e il pH misurato: la curva si aggiorna automaticamente. A fine registrazione, elabora con derivata prima, derivata seconda e funzione di Gran per localizzare i punti equivalenti.</p>
+
+<div class="grid">
+
+  <!-- LEFT COLUMN: input -->
+  <div class="col-left">
+    <div class="panel">
+      <h2>1. Parametri della prova</h2>
+      <label for="v0">Volume iniziale aliquota V₀ (mL)</label>
+      <input type="number" id="v0" step="0.01" value="10.00">
+      <label for="campioneNome">Identificativo campione</label>
+      <input type="text" id="campioneNome" placeholder="es. CA-3c, retrotitolazione">
+      <div class="hint">V₀ serve per la funzione di Gran: G = (V₀ + V) · 10<sup>±pH</sup>. Se non applicabile lascia il valore di default.</div>
+    </div>
+
+    <div class="panel">
+      <h2>2. Inserimento punti</h2>
+      <div class="row">
+        <div>
+          <label for="vIn">mL titolante aggiunti (cumulativo)</label>
+          <input type="number" id="vIn" step="0.01" placeholder="es. 7.20">
+        </div>
+        <div>
+          <label for="phIn">pH misurato</label>
+          <input type="number" id="phIn" step="0.01" placeholder="es. 5.20">
+        </div>
+      </div>
+      <button onclick="addPoint()">+ Aggiungi punto</button>
+      <button class="secondary" onclick="undoPoint()">Annulla ultimo</button>
+      <div class="hint" id="pointCount">0 punti registrati</div>
+    </div>
+
+    <div class="panel tablepanel">
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>#</th><th>V (mL)</th><th>pH</th><th></th></tr></thead>
+          <tbody id="dataTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="toolbar" style="margin-top:10px; margin-bottom:0;">
+        <button class="secondary small" onclick="exportCSV()">⬇ Esporta dati grezzi (CSV)</button>
+        <button class="secondary small" onclick="document.getElementById('csvFile').click()">Importa CSV</button>
+        <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="importCSV(event)">
+        <button class="danger small" onclick="clearAll()">Svuota tutto</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN: charts, tabbed -->
+  <div class="col-right">
+    <div class="tabbar">
+      <button class="tabbtn active" onclick="showTab('tabCurva')">Curva</button>
+      <button class="tabbtn" onclick="showTab('tabElab')">Elaborazione</button>
+      <button class="tabbtn" id="tabBtn-tabSummary" disabled onclick="showTab('tabSummary')">Riepilogo</button>
+    </div>
+
+    <div class="tabcontent active" id="tabCurva">
+      <div class="panel">
+        <h2>Curva di titolazione — pH vs V <span class="badge ok" id="liveBadge">live</span></h2>
+        <canvas id="mainChart" width="900" height="300"></canvas>
+        <div class="hint">Aggiornata automaticamente ad ogni punto inserito. Trascina un'area per zoomare, doppio clic per tornare alla vista intera.</div>
+        <div class="toolbar" style="margin-top:10px;">
+          <button class="secondary small" onclick="downloadChartImage('mainChart','curva_titolazione')">⬇ Scarica grafico (PNG)</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabcontent" id="tabElab">
+      <div class="panel elab-scroll" style="overflow-y:auto;">
+        <div style="flex:0 0 auto;">
+          <h2>3. Elaborazione</h2>
+          <button onclick="elaborate()">Elabora dati (derivate + Gran)</button>
+          <div class="hint">Servono almeno 5 punti per un'elaborazione sensata. Le derivate richiedono punti ordinati per V crescente (l'app li ordina automaticamente).</div>
+        </div>
+
+        <div id="elabResults" style="display:none; margin-top:18px;">
+          <div class="subsection">
+            <h3 class="subhead">Derivata prima — dpH/dV vs V</h3>
+            <canvas id="d1Chart" width="900" height="320"></canvas>
+            <div class="results" id="d1Result"></div>
+            <div class="toolbar" style="margin-top:10px;">
+              <button class="secondary small" onclick="downloadChartImage('d1Chart','derivata_prima')">⬇ Scarica grafico (PNG)</button>
+              <button class="secondary small" onclick="downloadD1CSV()">⬇ Scarica tabella dpH/dV (CSV)</button>
+            </div>
+          </div>
+
+          <div class="subsection">
+            <h3 class="subhead">Derivata seconda — d²pH/dV² vs V</h3>
+            <canvas id="d2Chart" width="900" height="320"></canvas>
+            <div class="results" id="d2Result"></div>
+            <div class="toolbar" style="margin-top:10px;">
+              <button class="secondary small" onclick="downloadChartImage('d2Chart','derivata_seconda')">⬇ Scarica grafico (PNG)</button>
+              <button class="secondary small" onclick="downloadD2CSV()">⬇ Scarica tabella d²pH/dV² (CSV)</button>
+            </div>
+          </div>
+
+          <div class="subsection">
+            <div class="flexhead">
+              <h3 class="subhead" style="margin:0;">Funzione di Gran</h3>
+              <button class="secondary small" onclick="addGranBlock()">+ Nuova regione Gran</button>
+            </div>
+            <div class="hint">Seleziona i punti (clic sui chip) appartenenti al tratto lineare intorno a un punto equivalente, scegli il tipo di eccesso, poi calcola. Ripeti per ogni punto equivalente della curva.</div>
+            <div id="granBlocks" style="margin-top:8px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabcontent" id="tabSummary">
+      <div class="panel">
+        <h2>Riepilogo confronto metodi</h2>
+        <div class="results" id="summaryResult"></div>
+        <div class="toolbar" style="margin-top:10px;">
+          <button class="secondary small" onclick="downloadSummaryCSV()">⬇ Scarica riepilogo (CSV)</button>
+          <button onclick="generatePdfReport()">🖨 Genera report PDF (tabelle + grafici)</button>
+        </div>
+        <div class="hint">Il report PDF si apre in una nuova scheda pronta per la stampa: usa "Salva come PDF" nella finestra di stampa del browser.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let data = []; // {V, pH}
+let granBlockCount = 0;
+let granBlocks = {}; // id -> {selected:Set, type:'acid'|'base'}
+
+function fmt(x, d=3){ return (Math.round(x*Math.pow(10,d))/Math.pow(10,d)).toFixed(d); }
+
+function addPoint(){
+  const v = parseFloat(document.getElementById('vIn').value);
+  const ph = parseFloat(document.getElementById('phIn').value);
+  if(isNaN(v) || isNaN(ph)){ alert('Inserisci sia V che pH validi.'); return; }
+  data.push({V:v, pH:ph});
+  data.sort((a,b)=>a.V-b.V);
+  document.getElementById('vIn').value='';
+  document.getElementById('phIn').value='';
+  document.getElementById('vIn').focus();
+  renderTable();
+  drawMainChart();
+}
+
+function undoPoint(){
+  data.pop();
+  renderTable();
+  drawMainChart();
+}
+
+function showTab(id){
+  document.querySelectorAll('.tabcontent').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.tabbtn').forEach(el=>el.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const btn = document.querySelector(`.tabbtn[onclick="showTab('${id}')"]`);
+  if(btn) btn.classList.add('active');
+}
+function enableTab(id){
+  const btn = document.getElementById('tabBtn-'+id);
+  if(btn) btn.disabled = false;
+}
+function disableTab(id){
+  const btn = document.getElementById('tabBtn-'+id);
+  if(btn) btn.disabled = true;
+}
+
+function clearAll(){
+  if(!confirm('Svuotare tutti i dati registrati?')) return;
+  data = [];
+  granBlocks = {};
+  granBlockCount = 0;
+  document.getElementById('granBlocks').innerHTML='';
+  ['tabSummary'].forEach(disableTab);
+  document.getElementById('elabResults').style.display = 'none';
+  showTab('tabCurva');
+  renderTable();
+  drawMainChart();
+}
+
+function renderTable(){
+  const tb = document.getElementById('dataTableBody');
+  tb.innerHTML = data.map((p,i)=>`<tr><td>${i+1}</td><td>${fmt(p.V,2)}</td><td>${fmt(p.pH,2)}</td>
+    <td><button class="secondary small" onclick="removePoint(${i})">✕</button></td></tr>`).join('');
+  document.getElementById('pointCount').textContent = data.length + ' punti registrati';
+}
+
+function removePoint(i){
+  data.splice(i,1);
+  renderTable();
+  drawMainChart();
+}
+
+function exportCSV(){
+  let csv = 'V_mL,pH\n' + data.map(p=>p.V+','+p.pH).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const nome = document.getElementById('campioneNome').value.trim() || 'titolazione';
+  a.download = nome.replace(/[^a-z0-9_\-]/gi,'_') + '.csv';
+  a.click();
+}
+
+function importCSV(ev){
+  const file = ev.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e=>{
+    const rawLines = e.target.result.split(/\r?\n/).filter(l=>l.trim().length>0);
+    if(rawLines.length===0){ alert('File CSV vuoto.'); return; }
+
+    // Rileva il separatore di colonna: tab (incolla da Excel), ; (Excel/LibreOffice IT), oppure ,
+    let sep;
+    if(rawLines[0].includes('\t')) sep = '\t';
+    else if(rawLines[0].includes(';')) sep = ';';
+    else sep = ',';
+
+    // Rileva se i numeri usano la virgola come separatore decimale (formato IT)
+    // guardando se, dopo aver splittato per sep, i campi numerici contengono una virgola
+    const sampleLine = rawLines.find(l => !isNaN(parseFloat(l.split(sep)[0].trim().replace(',','.')))) || rawLines[0];
+    const sampleParts = sampleLine.split(sep);
+    const usesCommaDecimal = sep===';' || /^-?\d+,\d+$/.test((sampleParts[0]||'').trim()) || /^-?\d+,\d+$/.test((sampleParts[1]||'').trim());
+
+    function parseNum(s){
+      s = (s||'').trim();
+      if(usesCommaDecimal) s = s.replace(',', '.');
+      return parseFloat(s);
+    }
+
+    let start = 0;
+    const firstParts = rawLines[0].split(sep);
+    if(isNaN(parseNum(firstParts[0]))) start = 1; // riga di intestazione
+
+    const imported = [];
+    let skipped = 0;
+    for(let i=start;i<rawLines.length;i++){
+      const parts = rawLines[i].split(sep);
+      const v = parseNum(parts[0]), ph = parseNum(parts[1]);
+      if(!isNaN(v) && !isNaN(ph)) imported.push({V:v,pH:ph});
+      else skipped++;
+    }
+
+    if(imported.length===0){
+      alert('Nessun punto valido trovato nel CSV. Formato atteso: due colonne (V, pH), separate da virgola o punto e virgola, con punto o virgola come separatore decimale.');
+      ev.target.value = '';
+      return;
+    }
+
+    data = imported;
+    data.sort((a,b)=>a.V-b.V);
+    renderTable();
+    drawMainChart();
+    ev.target.value = ''; // permette di reimportare lo stesso file se serve
+    let msg = `Importati ${imported.length} punti (separatore "${sep}", decimale "${usesCommaDecimal?',':'.'}")`;
+    if(skipped>0) msg += ` — ${skipped} righe scartate (non numeriche).`;
+    alert(msg);
+  };
+  reader.onerror = () => alert('Errore nella lettura del file.');
+  reader.readAsText(file);
+}
+
+/* ---------------- CANVAS PLOTTING (no external libs) ---------------- */
+
+function drawChart(canvas, series, opts={}){
+  // Adatta la risoluzione del canvas alle sue dimensioni CSS reali (responsive + nitido su schermi HiDPI).
+  // Senza questo, un bitmap fisso stirato via CSS su schermi larghi fa apparire il testo enorme e sfocato.
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = canvas.clientWidth || canvas.width;
+  const cssH = canvas.clientHeight || canvas.height;
+  canvas.width = Math.round(cssW * dpr);
+  canvas.height = Math.round(cssH * dpr);
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const W = cssW, H = cssH;
+
+  // gather all points across series for bounds
+  let allX=[], allY=[];
+  series.forEach(s=>{ s.points.forEach(p=>{allX.push(p.x); allY.push(p.y);}); });
+  if(allX.length===0){
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = DARK_THEME.bg; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle=DARK_THEME.textAxis; ctx.font=`12px ${FONT}`;
+    ctx.fillText('Nessun dato da mostrare', 60, 38);
+    canvas._chartState = null;
+    return;
+  }
+  let xmin=Math.min(...allX), xmax=Math.max(...allX);
+  let ymin=Math.min(...allY), ymax=Math.max(...allY);
+  if(xmin===xmax){xmin-=1; xmax+=1;}
+  if(ymin===ymax){ymin-=1; ymax+=1;}
+  const xpad=(xmax-xmin)*0.06, ypad=(ymax-ymin)*0.1;
+  xmin-=xpad; xmax+=xpad; ymin-=ypad; ymax+=ypad;
+  // dominio "naturale" (vista completa), usato per il reset dello zoom
+  canvas._naturalDomain = {xmin, xmax, ymin, ymax};
+  // se è attivo uno zoom (selezione utente), sostituisce i limiti calcolati sopra
+  let domain = {xmin, xmax, ymin, ymax};
+  if(canvas._zoomDomain) domain = canvas._zoomDomain;
+  // richiamabile dall'interattività per ridisegnare lo stesso grafico con un nuovo zoom
+  canvas._redraw = () => drawChart(canvas, series, opts);
+  // dati sorgente salvati per l'esportazione (PNG scaricato / report PDF), sempre con tema chiaro
+  canvas._series = series;
+  canvas._opts = opts;
+  // dimensioni CSS al momento dell'ultimo disegno "vero": servono per l'esportazione quando il
+  // canvas si trova in una scheda non attiva (display:none => clientWidth/Height sarebbero 0)
+  if(cssW>0 && cssH>0){ canvas._lastCssW = cssW; canvas._lastCssH = cssH; }
+
+  const plotW_ = W - PAD.l - PAD.r, plotH_ = H - PAD.t - PAD.b;
+  // Etichette leggermente ingrandite anche nella vista a schermo (fontScale > 1), separato
+  // dallo scaling usato per download/report che ha una sua taratura dedicata.
+  const {padL, padT, plotW, plotH} = renderChartCore(ctx, W, H, series, opts, domain, DARK_THEME, SCREEN_FONT_SCALE);
+
+  // salva lo stato per l'interattività (tooltip al passaggio del mouse)
+  canvas._chartState = {series, xmin:domain.xmin, xmax:domain.xmax, ymin:domain.ymin, ymax:domain.ymax, padL, padT, plotW, plotH, opts};
+}
+
+const PAD = {l:60, r:18, t:18, b:42};
+const SCREEN_FONT_SCALE = 1.15; // etichette leggermente più grandi nella vista a schermo dell'app
+const FONT = '"Segoe UI",Roboto,Arial,sans-serif';
+const DARK_THEME = {
+  bg:'#0c0e14', grid:'#242938', axis:'#3a4056', textAxis:'#7d8494', textLabel:'#aab0c0'
+};
+const LIGHT_THEME = {
+  bg:'#ffffff', grid:'#d8dbe2', axis:'#555b68', textAxis:'#333844', textLabel:'#20242c'
+};
+
+function renderChartCore(ctx, W, H, series, opts, domain, theme, fontScale=1){
+  const padL=PAD.l*fontScale, padR=PAD.r*fontScale, padT=PAD.t*fontScale, padB=PAD.b*fontScale;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const {xmin, xmax, ymin, ymax} = domain;
+  const f = (px) => Math.round(px*fontScale); // scala font/tratti proporzionalmente alla dimensione target
+
+  ctx.clearRect(0,0,W,H);
+  // Sfondo pieno disegnato nel bitmap (non solo via CSS): senza questo il PNG esportato
+  // ha canvas trasparente, invisibile su sfondi scuri quando lo si apre fuori dall'app.
+  ctx.fillStyle = theme.bg;
+  ctx.fillRect(0,0,W,H);
+
+  const X = x => padL + (x-xmin)/(xmax-xmin)*plotW;
+  const Y = y => padT + plotH - (y-ymin)/(ymax-ymin)*plotH;
+
+  // grid
+  ctx.strokeStyle = theme.grid; ctx.lineWidth=1*fontScale; ctx.font=`${f(12)}px ${FONT}`; ctx.fillStyle=theme.textAxis;
+  const nx=8, ny=6;
+  for(let i=0;i<=nx;i++){
+    const xv = xmin + (xmax-xmin)*i/nx;
+    const px = X(xv);
+    ctx.beginPath(); ctx.moveTo(px,padT); ctx.lineTo(px,padT+plotH); ctx.stroke();
+    ctx.fillText(fmt(xv,2), px-f(14), padT+plotH+f(16));
+  }
+  for(let i=0;i<=ny;i++){
+    const yv = ymin + (ymax-ymin)*i/ny;
+    const py = Y(yv);
+    ctx.beginPath(); ctx.moveTo(padL,py); ctx.lineTo(padL+plotW,py); ctx.stroke();
+    ctx.fillText(fmt(yv,2), padL-f(36), py+f(4));
+  }
+  // axes
+  ctx.strokeStyle=theme.axis; ctx.lineWidth=1.2*fontScale;
+  ctx.beginPath(); ctx.moveTo(padL,padT); ctx.lineTo(padL,padT+plotH); ctx.lineTo(padL+plotW,padT+plotH); ctx.stroke();
+
+  // axis labels
+  ctx.fillStyle=theme.textLabel; ctx.font=`${f(13)}px ${FONT}`;
+  if(opts.xlabel) ctx.fillText(opts.xlabel, padL+plotW/2-f(22), H-f(6));
+  if(opts.ylabel){
+    ctx.save(); ctx.translate(f(15), padT+plotH/2+f(28)); ctx.rotate(-Math.PI/2);
+    ctx.fillText(opts.ylabel, 0,0); ctx.restore();
+  }
+
+  // vertical markers
+  (opts.vlines||[]).forEach(vl=>{
+    const px = X(vl.x);
+    ctx.strokeStyle = vl.color || '#e0a72c';
+    ctx.setLineDash([5*fontScale,4*fontScale]); ctx.lineWidth=1.1*fontScale;
+    ctx.beginPath(); ctx.moveTo(px,padT); ctx.lineTo(px,padT+plotH); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = vl.color || '#e0a72c'; ctx.font=`${f(12)}px ${FONT}`;
+    ctx.fillText(vl.label||'', px+f(4), padT+f(14));
+  });
+
+  // series
+  series.forEach(s=>{
+    if(s.type==='line'){
+      ctx.strokeStyle = s.color; ctx.lineWidth = (s.width||1.8)*fontScale;
+      ctx.beginPath();
+      s.points.forEach((p,i)=>{ const px=X(p.x), py=Y(p.y); if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); });
+      ctx.stroke();
+    }
+    if(s.type==='dashed'){
+      ctx.strokeStyle = s.color; ctx.lineWidth = (s.width||1.2)*fontScale;
+      ctx.setLineDash([6*fontScale,4*fontScale]);
+      ctx.beginPath();
+      s.points.forEach((p,i)=>{ const px=X(p.x), py=Y(p.y); if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); });
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    if(s.type==='points' || s.type==='line'){
+      if(s.showPoints!==false){
+        ctx.fillStyle = s.pointColor || s.color;
+        s.points.forEach(p=>{
+          ctx.beginPath(); ctx.arc(X(p.x),Y(p.y), (s.pointR||2.6)*fontScale, 0, Math.PI*2); ctx.fill();
+        });
+      }
+    }
+  });
+
+  return {padL, padT, plotW, plotH};
+}
+
+function drawMainChart(){
+  const c = document.getElementById('mainChart');
+  drawChart(c, [{type:'line', points:data.map(p=>({x:p.V,y:p.pH})), color:'#4f8cff', pointColor:'#8ab4ff'}],
+    {xlabel:'mL titolante aggiunti', ylabel:'pH'});
+  enableChartInteractivity(c, {xLabel:'V', yLabel:'pH', xUnit:'mL', yUnit:''});
+}
+
+/* ---------------- INTERACTIVITY (crosshair + tooltip) ---------------- */
+
+function enableChartInteractivity(canvas, meta={}){
+  if(canvas._interactiveBound) return; // listener registrato una sola volta per canvas
+  canvas._interactiveBound = true;
+  canvas._meta = meta;
+
+  // Il canvas deve stare dentro un contenitore posizionato (.chart-wrap) per posizionare il tooltip
+  let wrap = canvas.parentElement;
+  if(!wrap.classList.contains('chart-wrap')){
+    wrap = document.createElement('div');
+    wrap.className = 'chart-wrap';
+    canvas.parentNode.insertBefore(wrap, canvas);
+    wrap.appendChild(canvas);
+  }
+  const tip = document.createElement('div');
+  tip.className = 'crosshair-tip';
+  tip.style.display = 'none';
+  wrap.appendChild(tip);
+
+  // rettangolo di selezione (trascinamento per zoom, stile Plotly)
+  const selBox = document.createElement('div');
+  selBox.className = 'zoom-selbox';
+  selBox.style.display = 'none';
+  wrap.appendChild(selBox);
+
+  // pulsante di reset zoom, visibile solo quando è attivo uno zoom
+  const resetBtn = document.createElement('button');
+  resetBtn.className = 'zoom-reset-btn';
+  resetBtn.textContent = '⤢ Reset zoom';
+  resetBtn.style.display = 'none';
+  resetBtn.addEventListener('click', ()=>{
+    canvas._zoomDomain = null;
+    if(canvas._redraw) canvas._redraw();
+    resetBtn.style.display = 'none';
+  });
+  wrap.appendChild(resetBtn);
+
+  function findNearest(px, py, st){
+    let best=null, bestDist=Infinity, bestSeries=null;
+    st.series.forEach(s=>{
+      s.points.forEach(p=>{
+        const dx = st.padL + (p.x-st.xmin)/(st.xmax-st.xmin)*st.plotW - px;
+        const dy = st.padT + st.plotH - (p.y-st.ymin)/(st.ymax-st.ymin)*st.plotH - py;
+        const d = dx*dx+dy*dy;
+        if(d<bestDist){ bestDist=d; best=p; bestSeries=s; }
+      });
+    });
+    return {point:best, series:bestSeries, dist:Math.sqrt(bestDist)};
+  }
+
+  function clampToPlot(px, py, st){
+    return {
+      x: Math.min(Math.max(px, st.padL), st.padL+st.plotW),
+      y: Math.min(Math.max(py, st.padT), st.padT+st.plotH)
+    };
+  }
+
+  let dragStart = null; // {px,py} in coordinate CSS canvas, presenti solo durante il trascinamento
+
+  canvas.addEventListener('mousedown', (ev)=>{
+    const st = canvas._chartState;
+    if(!st) return;
+    const rect = canvas.getBoundingClientRect();
+    const px = ev.clientX - rect.left, py = ev.clientY - rect.top;
+    // avvia il trascinamento solo se il click parte dentro l'area del grafico (non sugli assi/etichette)
+    if(px < st.padL || px > st.padL+st.plotW || py < st.padT || py > st.padT+st.plotH) return;
+    dragStart = {px, py};
+    selBox.style.display = 'block';
+    tip.style.display = 'none';
+    ev.preventDefault();
+  });
+
+  window.addEventListener('mousemove', (ev)=>{
+    if(!dragStart) return;
+    const st = canvas._chartState;
+    if(!st) return;
+    const rect = canvas.getBoundingClientRect();
+    let px = ev.clientX - rect.left, py = ev.clientY - rect.top;
+    ({x:px, y:py} = clampToPlot(px, py, st));
+    const left = Math.min(dragStart.px, px), top = Math.min(dragStart.py, py);
+    const w = Math.abs(px-dragStart.px), h = Math.abs(py-dragStart.py);
+    selBox.style.left = left+'px'; selBox.style.top = top+'px';
+    selBox.style.width = w+'px'; selBox.style.height = h+'px';
+  });
+
+  window.addEventListener('mouseup', (ev)=>{
+    if(!dragStart) return;
+    const st = canvas._chartState;
+    const rect = canvas.getBoundingClientRect();
+    let px = ev.clientX - rect.left, py = ev.clientY - rect.top;
+    ({x:px, y:py} = clampToPlot(px, py, st));
+    selBox.style.display = 'none';
+    const w = Math.abs(px-dragStart.px), h = Math.abs(py-dragStart.py);
+    // soglia minima: un trascinamento troppo piccolo è considerato un click, non uno zoom
+    if(w>8 && h>8 && st){
+      const x1 = st.xmin + (Math.min(dragStart.px,px)-st.padL)/st.plotW*(st.xmax-st.xmin);
+      const x2 = st.xmin + (Math.max(dragStart.px,px)-st.padL)/st.plotW*(st.xmax-st.xmin);
+      const y1 = st.ymax - (Math.max(dragStart.py,py)-st.padT)/st.plotH*(st.ymax-st.ymin);
+      const y2 = st.ymax - (Math.min(dragStart.py,py)-st.padT)/st.plotH*(st.ymax-st.ymin);
+      canvas._zoomDomain = {xmin:x1, xmax:x2, ymin:y1, ymax:y2};
+      if(canvas._redraw) canvas._redraw();
+      resetBtn.style.display = 'inline-flex';
+    }
+    dragStart = null;
+  });
+
+  canvas.addEventListener('dblclick', ()=>{
+    canvas._zoomDomain = null;
+    if(canvas._redraw) canvas._redraw();
+    resetBtn.style.display = 'none';
+  });
+
+  canvas.addEventListener('mousemove', (ev)=>{
+    if(dragStart) return; // durante il trascinamento non mostrare il tooltip
+    const st = canvas._chartState;
+    if(!st){ tip.style.display='none'; return; }
+    const rect = canvas.getBoundingClientRect();
+    const px = ev.clientX - rect.left, py = ev.clientY - rect.top;
+    const {point, dist} = findNearest(px, py, st);
+    if(!point || dist>28){ tip.style.display='none'; return; }
+    const xLbl = meta.xLabel||'x', yLbl = meta.yLabel||'y';
+    const xUnit = meta.xUnit? ' '+meta.xUnit : '';
+    const yUnit = meta.yUnit? ' '+meta.yUnit : '';
+    tip.innerHTML = `${xLbl} = <b>${fmt(point.x,3)}</b>${xUnit}<br>${yLbl} = <b>${fmt(point.y,3)}</b>${yUnit}`;
+    tip.style.display = 'block';
+    let left = px+14, top = py-14;
+    if(left + 130 > wrap.clientWidth) left = px - 140;
+    if(top < 0) top = py + 14;
+    tip.style.left = left+'px';
+    tip.style.top = top+'px';
+  });
+  canvas.addEventListener('mouseleave', ()=>{ if(!dragStart) tip.style.display='none'; });
+}
+
+/* ---------------- DERIVATIVES ---------------- */
+
+function firstDerivative(pts){
+  // pts sorted by V ascending, may have duplicate V (skip)
+  const clean = [];
+  for(const p of pts){ if(clean.length===0 || p.V!==clean[clean.length-1].V) clean.push(p); }
+  const res = [];
+  for(let i=0;i<clean.length-1;i++){
+    const dV = clean[i+1].V - clean[i].V;
+    if(dV<=0) continue;
+    const dpH = clean[i+1].pH - clean[i].pH;
+    res.push({V:(clean[i].V+clean[i+1].V)/2, d:dpH/dV});
+  }
+  return res;
+}
+
+function secondDerivative(d1){
+  const res=[];
+  for(let i=0;i<d1.length-1;i++){
+    const dV = d1[i+1].V - d1[i].V;
+    if(dV<=0) continue;
+    const dd = d1[i+1].d - d1[i].d;
+    res.push({V:(d1[i].V+d1[i+1].V)/2, d2:dd/dV});
+  }
+  return res;
+}
+
+function findLocalMaxima(d1){
+  // Individua tutti i massimi locali di |dpH/dV|: ogni punto in cui |d| è maggiore dei
+  // vicini immediati (candidato a punto equivalente in una curva con più flessi).
+  const abs = d1.map(p=>Math.abs(p.d));
+  const globalMax = Math.max(...abs);
+  if(!isFinite(globalMax) || globalMax<=0) return [];
+  const candidates = [];
+  for(let i=0;i<d1.length;i++){
+    const left = i>0 ? abs[i-1] : -Infinity;
+    const right = i<d1.length-1 ? abs[i+1] : -Infinity;
+    if(abs[i]>=left && abs[i]>=right) candidates.push(d1[i]);
+  }
+  // scarta i picchi troppo deboli rispetto al massimo globale (rumore, non veri flessi)
+  const threshold = globalMax * 0.15;
+  const significant = candidates.filter(p=>Math.abs(p.d) >= threshold);
+  // se due picchi sono troppo vicini in V (stesso flesso, plateau piatto), tiene il più marcato
+  significant.sort((a,b)=>Math.abs(b.d)-Math.abs(a.d));
+  const kept = [];
+  const minSeparation = (d1[d1.length-1].V - d1[0].V) * 0.03;
+  significant.forEach(p=>{
+    if(!kept.some(k=>Math.abs(k.V-p.V)<minSeparation)) kept.push(p);
+  });
+  kept.sort((a,b)=>Math.abs(b.d)-Math.abs(a.d));
+  return kept;
+}
+
+function findZeroCrossings(d2){
+  const crossings=[];
+  const rawCrossings=[];
+  for(let i=0;i<d2.length-1;i++){
+    const a=d2[i].d2, b=d2[i+1].d2;
+    if((a>=0 && b<0) || (a<=0 && b>0)){
+      // linear interpolation for zero
+      const t = a/(a-b);
+      const Vc = d2[i].V + t*(d2[i+1].V - d2[i].V);
+      // ampiezza della transizione attorno allo zero: uno zero "vero" (flesso reale) corrisponde
+      // a un'oscillazione marcata di d2 (grande escursione tra i due valori adiacenti).
+      // Un attraversamento con escursione minuscola è rumore numerico in una zona piatta,
+      // non un punto equivalente reale — va scartato.
+      rawCrossings.push({V:Vc, amplitude: Math.max(Math.abs(a), Math.abs(b))});
+    }
+  }
+  if(rawCrossings.length===0) return crossings;
+  const globalAmp = Math.max(...rawCrossings.map(c=>c.amplitude));
+  const threshold = globalAmp * 0.15; // stessa soglia di significatività usata per i massimi della derivata prima
+  rawCrossings.forEach(c=>{ if(c.amplitude >= threshold) crossings.push(c.V); });
+  return crossings;
+}
+
+function elaborate(){
+  if(data.length<5){ alert("Servono almeno 5 punti per un'elaborazione sensata."); return; }
+  const sorted = [...data].sort((a,b)=>a.V-b.V);
+  document.getElementById('elabResults').style.display = 'block';
+
+  // 1st derivative
+  const d1 = firstDerivative(sorted);
+  const c1 = document.getElementById('d1Chart');
+  // Trova TUTTI i massimi locali di |dpH/dV| (non solo il globale): ogni picco è un possibile
+  // punto equivalente. Una curva con più flessi (es. titolazione polifunzionale/mix di acidi)
+  // ha più massimi locali che vanno individuati singolarmente, non un solo massimo assoluto.
+  const localMaxima = findLocalMaxima(d1);
+  const maxAbs = localMaxima[0] || d1[0]; // il più marcato, per compatibilità col riepilogo
+  drawChart(c1, [{type:'line', points:d1.map(p=>({x:p.V,y:p.d})), color:'#4caf7d', pointColor:'#7fd9a8'}],
+    {xlabel:'V (mL)', ylabel:'dpH/dV',
+     vlines: localMaxima.map((p,i)=>({x:p.V, color: i===0?'#e0a72c':'#ff8f3c', label:(i===0?'max':'picco '+(i+1))+' |dpH/dV|'}))});
+  enableChartInteractivity(c1, {xLabel:'V', yLabel:'dpH/dV', xUnit:'mL', yUnit:''});
+  document.getElementById('d1Result').innerHTML = localMaxima.length>1
+    ? 'Punti di massima pendenza (stima equivalenze), in ordine di intensità: ' +
+      localMaxima.map((p,i)=>`<b>V ≈ ${fmt(p.V,3)} mL</b> (|dpH/dV| = ${fmt(Math.abs(p.d),2)})`).join(', ')
+    : `Punto di massima pendenza (stima equivalenza): <b>V ≈ ${fmt(maxAbs.V,3)} mL</b> (|dpH/dV| = ${fmt(Math.abs(maxAbs.d),2)})`;
+
+  // 2nd derivative
+  const d2 = secondDerivative(d1);
+  const c2 = document.getElementById('d2Chart');
+  const crossings = findZeroCrossings(d2);
+  drawChart(c2, [{type:'line', points:d2.map(p=>({x:p.V,y:p.d2})), color:'#e0a72c', pointColor:'#f0c563'}],
+    {xlabel:'V (mL)', ylabel:'d²pH/dV²',
+     vlines: crossings.map((v,i)=>({x:v, color:'#ff6b6b', label:'zero '+(i+1)}))});
+  enableChartInteractivity(c2, {xLabel:'V', yLabel:'d²pH/dV²', xUnit:'mL', yUnit:''});
+  document.getElementById('d2Result').innerHTML = crossings.length
+    ? 'Punti equivalenti (zeri della derivata seconda): ' + crossings.map(v=>`<b>${fmt(v,3)} mL</b>`).join(', ')
+    : 'Nessun azzeramento netto individuato: infittisci i punti vicino al presunto punto equivalente.';
+
+  // Gran panel
+  if(Object.keys(granBlocks).length===0) addGranBlock();
+  else Object.keys(granBlocks).forEach(id=>renderGranBlock(id));
+
+  enableTab('tabSummary');
+  updateSummary();
+}
+
+/* ---------------- GRAN FUNCTION ---------------- */
+
+function addGranBlock(){
+  granBlockCount++;
+  const id = 'gran'+granBlockCount;
+  granBlocks[id] = {selected:new Set(), type:'acid', result:null};
+  const div = document.createElement('div');
+  div.className='gran-block';
+  div.id = id;
+  document.getElementById('granBlocks').appendChild(div);
+  renderGranBlock(id);
+}
+
+function toggleGranPoint(id, idx){
+  const b = granBlocks[id];
+  if(b.selected.has(idx)) b.selected.delete(idx); else b.selected.add(idx);
+  renderGranBlock(id);
+}
+
+function setGranType(id, type){
+  granBlocks[id].type = type;
+  renderGranBlock(id);
+}
+
+function removeGranBlock(id){
+  delete granBlocks[id];
+  const el = document.getElementById(id);
+  if(el) el.remove();
+  updateSummary();
+}
+
+function renderGranBlock(id){
+  const b = granBlocks[id];
+  const sorted = [...data].sort((a,b)=>a.V-b.V);
+  const el = document.getElementById(id);
+  const v0 = parseFloat(document.getElementById('v0').value) || 0;
+
+  let chipsHtml = sorted.map((p,i)=>{
+    const sel = b.selected.has(i) ? 'sel' : '';
+    return `<span class="chip ${sel}" onclick="toggleGranPoint('${id}',${i})">${fmt(p.V,2)} / pH ${fmt(p.pH,2)}</span>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="flexhead">
+      <h3>Regione: ${id}</h3>
+      <button class="secondary small" onclick="removeGranBlock('${id}')">Rimuovi</button>
+    </div>
+    <label>Tipo di eccesso nel tratto selezionato</label>
+    <select onchange="setGranType('${id}', this.value)">
+      <option value="acid" ${b.type==='acid'?'selected':''}>Eccesso di acido (dopo un punto equivalente) — G = (V₀+V)·10^(−pH)</option>
+      <option value="base" ${b.type==='base'?'selected':''}>Eccesso di base (prima di un punto equivalente) — G = (V₀+V)·10^(pH−14)</option>
+    </select>
+    <label>Seleziona i punti del tratto lineare (min. 3)</label>
+    <div>${chipsHtml}</div>
+    <button class="small" onclick="computeGran('${id}')">Calcola Gran</button>
+    <div class="results" id="${id}-result" style="margin-top:8px;"></div>
+    <canvas id="${id}-chart" width="860" height="260" style="margin-top:8px;"></canvas>
+    <div class="toolbar" style="margin-top:8px;">
+      <button class="secondary small" onclick="downloadChartImage('${id}-chart','gran_${id}')">⬇ Scarica grafico Gran (PNG)</button>
+    </div>
+  `;
+}
+
+function computeGran(id){
+  const b = granBlocks[id];
+  const sorted = [...data].sort((a,b)=>a.V-b.V);
+  const v0 = parseFloat(document.getElementById('v0').value) || 0;
+  const idxs = [...b.selected].sort((a,b)=>a-b);
+  if(idxs.length<3){ alert('Seleziona almeno 3 punti per la regressione lineare.'); return; }
+
+  const pts = idxs.map(i=>sorted[i]);
+  const G = pts.map(p=>{
+    const g = b.type==='acid'
+      ? (v0+p.V)*Math.pow(10,-p.pH)
+      : (v0+p.V)*Math.pow(10, p.pH-14);
+    return {V:p.V, G:g};
+  });
+
+  // linear regression G = m*V + q
+  const n = G.length;
+  const sumV = G.reduce((s,p)=>s+p.V,0);
+  const sumG = G.reduce((s,p)=>s+p.G,0);
+  const sumVV = G.reduce((s,p)=>s+p.V*p.V,0);
+  const sumVG = G.reduce((s,p)=>s+p.V*p.G,0);
+  const m = (n*sumVG - sumV*sumG) / (n*sumVV - sumV*sumV);
+  const q = (sumG - m*sumV) / n;
+  const Veq = -q/m;
+
+  // R^2
+  const meanG = sumG/n;
+  const ssTot = G.reduce((s,p)=>s+Math.pow(p.G-meanG,2),0);
+  const ssRes = G.reduce((s,p)=>s+Math.pow(p.G-(m*p.V+q),2),0);
+  const r2 = 1 - ssRes/ssTot;
+
+  b.result = {Veq, m, q, r2};
+
+  document.getElementById(id+'-result').innerHTML =
+    `<div class="kv"><span>Punto equivalente (intersezione G=0)</span><b>${fmt(Veq,3)} mL</b></div>
+     <div class="kv"><span>R² della regressione</span><span>${fmt(r2,4)} ${r2<0.99?'<span class="badge warn">verifica selezione punti</span>':'<span class="badge ok">buona linearità</span>'}</span></div>
+     <div class="kv"><span>Retta</span><span>G = ${fmt(m,6)}·V + ${fmt(q,6)}</span></div>`;
+
+  const xmin = Math.min(...G.map(p=>p.V), Veq);
+  const xmax = Math.max(...G.map(p=>p.V), Veq);
+  const fitPts = [];
+  for(let x=xmin-0.05*(xmax-xmin); x<=xmax+0.05*(xmax-xmin); x+= (xmax-xmin)/40) fitPts.push({x, y:m*x+q});
+
+  const c = document.getElementById(id+'-chart');
+  drawChart(c, [
+    {type:'dashed', points:fitPts, color:'#7d8494', showPoints:false},
+    {type:'points', points:G.map(p=>({x:p.V,y:p.G})), color:'#ff6b6b', pointColor:'#ff8f8f'}
+  ], {xlabel:'V (mL)', ylabel:'G', vlines:[{x:Veq, color:'#4caf7d', label:'Veq='+fmt(Veq,2)}]});
+  enableChartInteractivity(c, {xLabel:'V', yLabel:'G', xUnit:'mL', yUnit:''});
+
+  updateSummary();
+}
+
+function updateSummary(){
+  const sorted = [...data].sort((a,b)=>a.V-b.V);
+  if(sorted.length<5) return;
+  // (tab già abilitata da elaborate())
+
+  const d1 = firstDerivative(sorted);
+  const localMaxima = findLocalMaxima(d1);
+  const d2 = secondDerivative(d1);
+  const crossings = findZeroCrossings(d2);
+
+  let html = '<div class="kv"><span><b>Derivata prima</b> — max pendenza</span><span>' +
+    (localMaxima.length>1
+      ? localMaxima.map(p=>fmt(p.V,3)+' mL').join(', ')
+      : fmt((localMaxima[0]||d1[0]).V,3) + ' mL') + '</span></div>';
+  html += '<div class="kv"><span><b>Derivata seconda</b> — zeri</span><span>' + (crossings.length? crossings.map(v=>fmt(v,3)).join(', ')+' mL' : '—') + '</span></div>';
+
+  Object.keys(granBlocks).forEach(id=>{
+    const b = granBlocks[id];
+    if(b.result){
+      html += `<div class="kv"><span><b>Gran (${id}, ${b.type==='acid'?'ecc. acido':'ecc. base'})</b></span><span>${fmt(b.result.Veq,3)} mL (R²=${fmt(b.result.r2,4)})</span></div>`;
+    }
+  });
+
+  const granVals = Object.values(granBlocks).filter(b=>b.result).map(b=>b.result.Veq).sort((a,b)=>a-b);
+  if(granVals.length>=2){
+    html += `<div class="kv"><span><b>ΔV tra regioni Gran (1ª–2ª)</b></span><span>${fmt(granVals[granVals.length-1]-granVals[0],3)} mL</span></div>`;
+  }
+
+  document.getElementById('summaryResult').innerHTML = html;
+}
+
+/* ---------------- DOWNLOAD HELPERS ---------------- */
+
+function sampleTag(){
+  const nome = document.getElementById('campioneNome').value.trim();
+  return nome ? nome.replace(/[^a-z0-9_\-]/gi,'_') : 'titolazione';
+}
+
+function downloadBlob(content, filename, mime){
+  const blob = new Blob([content], {type:mime});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+}
+
+function chartTitleFor(canvasId){
+  const nome = (document.getElementById('campioneNome').value || '').trim();
+  let base;
+  if(canvasId==='mainChart') base = 'Curva di titolazione';
+  else if(canvasId==='d1Chart') base = 'Derivata prima — dpH/dV vs V';
+  else if(canvasId==='d2Chart') base = 'Derivata seconda — d²pH/dV² vs V';
+  else if(canvasId.endsWith('-chart')){
+    const id = canvasId.replace('-chart','');
+    const b = granBlocks[id];
+    base = 'Metodo di Gran' + (b ? ` (${id}, ${b.type==='acid'?'eccesso acido':'eccesso base'})` : '');
+  } else base = '';
+  return base + (nome ? ` — Campione: ${nome}` : '');
+}
+
+function downloadChartImage(canvasId, label){
+  const canvas = document.getElementById(canvasId);
+  if(!canvas){ alert('Grafico non disponibile.'); return; }
+  const dataUrl = renderChartToDataURL(canvas, {title: chartTitleFor(canvasId)});
+  if(!dataUrl){ alert('Grafico non disponibile.'); return; }
+  const a = document.createElement('a');
+  a.href = dataUrl;
+  a.download = sampleTag() + '_' + label + '.png';
+  a.click();
+}
+
+function renderChartToDataURL(canvas, opts={}){
+  // Ridisegna il grafico su un canvas separato con sfondo bianco (tema chiaro), usato sia per
+  // il download PNG sia per le immagini incluse nel report PDF: lo sfondo scuro dell'app in
+  // schermo non deve finire nei file esportati/stampati.
+  if(!canvas._series) return null;
+  // Per il report PDF si richiede una dimensione target più grande (targetW/targetH) e una
+  // scala del font maggiore, così il grafico stampato è leggibile su pagina A4 anziché
+  // ereditare le dimensioni ridotte con cui è disegnato a schermo dentro un tab.
+  const cssW = opts.targetW || canvas._lastCssW || canvas.clientWidth || canvas.width;
+  const cssH0 = opts.targetH || canvas._lastCssH || canvas.clientHeight || canvas.height;
+  const fontScale = opts.fontScale || 1;
+  // Striscia titolo (nome grafico + campione) sopra l'area del grafico, solo se richiesto:
+  // altezza proporzionale al fontScale, per restare leggibile sia nel PNG scaricato sia nel
+  // report PDF (che passa fontScale più alto).
+  const titleH = opts.title ? Math.round(26 * fontScale) : 0;
+  const cssH = cssH0 + titleH;
+  const off = document.createElement('canvas');
+  const dpr = (window.devicePixelRatio || 1) * (opts.superSample || 1);
+  off.width = Math.round(cssW * dpr); off.height = Math.round(cssH * dpr);
+  const ctx = off.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = LIGHT_THEME.bg;
+  ctx.fillRect(0, 0, cssW, cssH);
+  if(opts.title){
+    ctx.fillStyle = '#111';
+    ctx.font = `bold ${Math.round(14*fontScale)}px ${FONT}`;
+    ctx.textAlign = 'center';
+    ctx.fillText(opts.title, cssW/2, Math.round(titleH*0.68));
+    ctx.textAlign = 'left';
+  }
+  ctx.save();
+  ctx.translate(0, titleH);
+  const domain = canvas._zoomDomain || canvas._naturalDomain;
+  renderChartCore(ctx, cssW, cssH0, canvas._series, canvas._opts, domain, LIGHT_THEME, fontScale);
+  ctx.restore();
+  return off.toDataURL('image/png');
+}
+
+function downloadD1CSV(){
+  const sorted = [...data].sort((a,b)=>a.V-b.V);
+  const d1 = firstDerivative(sorted);
+  let csv = 'V_mL,dpH_dV\n' + d1.map(p=>fmt(p.V,4)+','+fmt(p.d,6)).join('\n');
+  downloadBlob(csv, sampleTag()+'_derivata_prima.csv', 'text/csv');
+}
+
+function downloadD2CSV(){
+  const sorted = [...data].sort((a,b)=>a.V-b.V);
+  const d1 = firstDerivative(sorted);
+  const d2 = secondDerivative(d1);
+  let csv = 'V_mL,d2pH_dV2\n' + d2.map(p=>fmt(p.V,4)+','+fmt(p.d2,6)).join('\n');
+  downloadBlob(csv, sampleTag()+'_derivata_seconda.csv', 'text/csv');
+}
+
+function downloadSummaryCSV(){
+  const sorted = [...data].sort((a,b)=>a.V-b.V);
+  const d1 = firstDerivative(sorted);
+  const localMaxima = findLocalMaxima(d1);
+  const d2 = secondDerivative(d1);
+  const crossings = findZeroCrossings(d2);
+  const nome = (document.getElementById('campioneNome').value || '').trim() || '(non specificato)';
+
+  let rows = [['campione', nome, '', ''], ['metodo','descrizione','V_mL','note']];
+  localMaxima.forEach((p,i)=> rows.push(['derivata_prima', (i===0?'max':'picco '+(i+1))+' |dpH/dV|', fmt(p.V,4), 'stima equivalenza']));
+  crossings.forEach((v,i)=> rows.push(['derivata_seconda','zero '+(i+1), fmt(v,4), '']));
+  Object.keys(granBlocks).forEach(id=>{
+    const b = granBlocks[id];
+    if(b.result) rows.push(['gran_'+id, b.type==='acid'?'eccesso acido':'eccesso base', fmt(b.result.Veq,4), 'R2='+fmt(b.result.r2,4)]);
+  });
+  const csv = rows.map(r=>r.join(',')).join('\n');
+  downloadBlob(csv, sampleTag()+'_riepilogo_risultati.csv', 'text/csv');
+}
+
+function downloadFullReport(){
+  const sorted = [...data].sort((a,b)=>a.V-b.V);
+  const d1 = firstDerivative(sorted);
+  const localMaxima = findLocalMaxima(d1);
+  const d2 = secondDerivative(d1);
+  const crossings = findZeroCrossings(d2);
+  const v0 = document.getElementById('v0').value;
+  const nome = document.getElementById('campioneNome').value || '(non specificato)';
+  const now = new Date().toLocaleString('it-IT');
+
+  let txt = `REPORT TITOLAZIONE POTENZIOMETRICA\n`;
+  txt += `Campione: ${nome}\n`;
+  txt += `V0 (mL): ${v0}\n`;
+  txt += `Generato: ${now}\n`;
+  txt += `\n--- DATI GREZZI (V_mL, pH) ---\n`;
+  txt += 'V_mL,pH\n' + sorted.map(p=>fmt(p.V,3)+','+fmt(p.pH,3)).join('\n');
+  txt += `\n\n--- DERIVATA PRIMA (V_mL, dpH/dV) ---\n`;
+  txt += 'V_mL,dpH_dV\n' + d1.map(p=>fmt(p.V,4)+','+fmt(p.d,6)).join('\n');
+  txt += `\nPicchi |dpH/dV| a V = ${localMaxima.map(p=>fmt(p.V,4)).join(', ')} mL\n`;
+  txt += `\n\n--- DERIVATA SECONDA (V_mL, d2pH/dV2) ---\n`;
+  txt += 'V_mL,d2pH_dV2\n' + d2.map(p=>fmt(p.V,4)+','+fmt(p.d2,6)).join('\n');
+  txt += `\nZeri (punti equivalenti): ${crossings.map(v=>fmt(v,4)).join(', ')||'nessuno'}\n`;
+  txt += `\n\n--- FUNZIONE DI GRAN ---\n`;
+  Object.keys(granBlocks).forEach(id=>{
+    const b = granBlocks[id];
+    if(b.result){
+      txt += `Regione ${id} (${b.type==='acid'?'eccesso acido':'eccesso base'}): Veq = ${fmt(b.result.Veq,4)} mL, R2 = ${fmt(b.result.r2,4)}, retta G = ${fmt(b.result.m,6)}*V + ${fmt(b.result.q,6)}\n`;
+    }
+  });
+  downloadBlob(txt, sampleTag()+'_report_completo.txt', 'text/plain');
+}
+
+function generatePdfReport(){
+  const sorted = [...data].sort((a,b)=>a.V-b.V);
+  if(sorted.length<5){ alert("Servono almeno 5 punti elaborati per generare il report."); return; }
+  const d1 = firstDerivative(sorted);
+  const localMaxima = findLocalMaxima(d1);
+  const maxAbs = localMaxima[0] || d1[0];
+  const d2 = secondDerivative(d1);
+  const crossings = findZeroCrossings(d2);
+  const v0 = document.getElementById('v0').value || '—';
+  const nome = document.getElementById('campioneNome').value.trim() || '(non specificato)';
+  const now = new Date().toLocaleString('it-IT');
+
+  // Immagini dei grafici: data URL PNG estratte dai canvas già disegnati (nessuna libreria esterna necessaria)
+  // Immagini dei grafici: rese a dimensione fissa più grande e con font scalato per il report
+  // (la vista a schermo è più piccola perché vive dentro un tab), con supersampling per nitidezza in stampa.
+  const REPORT_IMG = {targetW: 760, targetH: 420, fontScale: 1.35, superSample: 2};
+  const REPORT_IMG_GRAN = {targetW: 760, targetH: 380, fontScale: 1.35, superSample: 2};
+  const imgMain = renderChartToDataURL(document.getElementById('mainChart'), REPORT_IMG);
+  const imgD1 = renderChartToDataURL(document.getElementById('d1Chart'), REPORT_IMG);
+  const imgD2 = renderChartToDataURL(document.getElementById('d2Chart'), REPORT_IMG);
+  const granSections = Object.keys(granBlocks).map(id=>{
+    const b = granBlocks[id];
+    if(!b.result) return '';
+    const c = document.getElementById(id+'-chart');
+    const img = c ? renderChartToDataURL(c, REPORT_IMG_GRAN) : '';
+    return `
+      <div class="rep-section">
+        <h3>Metodo di Gran — regione ${id} (${b.type==='acid'?'eccesso di acido':'eccesso di base'})</h3>
+        <table class="rep-kv">
+          <tr><td>Punto equivalente Veq</td><td><b>${fmt(b.result.Veq,3)} mL</b></td></tr>
+          <tr><td>R² della regressione</td><td>${fmt(b.result.r2,4)}</td></tr>
+          <tr><td>Retta interpolante</td><td>G = ${fmt(b.result.m,6)}·V + ${fmt(b.result.q,6)}</td></tr>
+        </table>
+        ${img? `<img src="${img}" class="rep-chart">` : ''}
+      </div>`;
+  }).join('');
+
+  const dataRows = sorted.map((p,i)=>`<tr><td>${i+1}</td><td>${fmt(p.V,3)}</td><td>${fmt(p.pH,3)}</td></tr>`).join('');
+
+  const granVals = Object.values(granBlocks).filter(b=>b.result).map(b=>b.result.Veq).sort((a,b)=>a-b);
+  const deltaGran = granVals.length>=2 ? fmt(granVals[granVals.length-1]-granVals[0],3)+' mL' : '—';
+
+  const html = `<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8">
+<title>Report titolazione — ${nome}</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230c0e14'/%3E%3Cpath d='M12 4h8v2h-1.5v7.2l4.8 9.6c.9 1.8-.3 3.8-2.3 3.8H10.9c-2 0-3.2-2-2.3-3.8l4.8-9.6V6H12V4z' fill='none' stroke='%236aa9ff' stroke-width='1.6' stroke-linejoin='round'/%3E%3Cpath d='M10.3 19.5h11.3' stroke='%236aa9ff' stroke-width='1.4'/%3E%3Ccircle cx='16' cy='23.5' r='1.4' fill='%23e0a72c'/%3E%3Cline x1='16' y1='2' x2='16' y2='15' stroke='%23ff6b6b' stroke-width='1.8' stroke-linecap='round'/%3E%3Ccircle cx='16' cy='2' r='1.6' fill='%23ff6b6b'/%3E%3C/svg%3E">
+<style>
+  @page{ size:A4; margin:16mm 14mm; }
+  body{ font-family:"Segoe UI",Roboto,Arial,sans-serif; color:#111; margin:0; }
+  h1{ font-size:1.4rem; margin:0 0 2px; }
+  h2{ font-size:1.05rem; border-bottom:2px solid #333; padding-bottom:4px; margin-top:26px; }
+  h3{ font-size:0.95rem; margin:18px 0 6px; }
+  .meta{ color:#444; font-size:0.85rem; margin-bottom:14px; }
+  .meta span{ margin-right:22px; }
+  table{ border-collapse:collapse; width:100%; font-size:0.8rem; }
+  table.rep-kv td{ padding:3px 8px; border:1px solid #ccc; }
+  table.rep-kv td:first-child{ color:#555; width:55%; }
+  table.rep-data{ margin-top:8px; }
+  table.rep-data th, table.rep-data td{ border:1px solid #ccc; padding:3px 7px; text-align:right; }
+  table.rep-data th{ background:#eee; }
+  table.rep-data td:first-child, table.rep-data th:first-child{ text-align:center; }
+  .rep-chart{ width:100%; max-width:640px; display:block; margin:10px auto; border:1px solid #ccc; }
+  .rep-section{ page-break-inside:avoid; margin-bottom:10px; }
+  .rep-summary td{ padding:4px 8px; border:1px solid #ccc; }
+  .chart-block{ page-break-inside:avoid; break-inside:avoid; margin-bottom:6px; }
+  .printbar{ margin:14px 0; }
+  @media print{ .printbar{ display:none; } .rep-section{ break-inside:avoid; } .chart-block{ break-inside:avoid; } .rep-data-section{ page-break-before:always; break-before:page; } }
+  .databox{ max-height:340px; overflow:auto; border:1px solid #ccc; }
+  @media print{ .databox{ max-height:none; overflow:visible; } }
+  .rep-data-section{ page-break-before:always; break-before:page; }
+  table.rep-data thead{ display:table-header-group; }
+  table.rep-data tr{ page-break-inside:avoid; break-inside:avoid; }
+</style>
+</head><body>
+  <div class="printbar"><button onclick="window.print()">🖨 Stampa / Salva come PDF</button></div>
+  <h1>Report titolazione potenziometrica</h1>
+  <div class="meta">
+    <span><b>Campione:</b> ${nome}</span>
+    <span><b>V₀:</b> ${v0} mL</span>
+    <span><b>Generato il:</b> ${now}</span>
+  </div>
+
+  <div class="chart-block">
+    <h2>Curva di titolazione</h2>
+    <img src="${imgMain}" class="rep-chart">
+  </div>
+
+  <h2>Riepilogo confronto metodi</h2>
+  <table class="rep-summary">
+    <tr><td>Derivata prima — max pendenza</td><td><b>${localMaxima.length>1 ? localMaxima.map(p=>fmt(p.V,3)+' mL').join(', ') : fmt(maxAbs.V,3)+' mL'}</b></td></tr>
+    <tr><td>Derivata seconda — zeri</td><td><b>${crossings.length? crossings.map(v=>fmt(v,3)).join(', ')+' mL' : '—'}</b></td></tr>
+    ${Object.keys(granBlocks).map(id=>{
+      const b = granBlocks[id];
+      if(!b.result) return '';
+      return `<tr><td>Gran (${id}, ${b.type==='acid'?'ecc. acido':'ecc. base'})</td><td><b>${fmt(b.result.Veq,3)} mL</b> (R²=${fmt(b.result.r2,4)})</td></tr>`;
+    }).join('')}
+    <tr><td>ΔV tra regioni Gran (1ª–2ª)</td><td><b>${deltaGran}</b></td></tr>
+  </table>
+
+  <div class="chart-block">
+    <h2>Derivata prima — dpH/dV vs V</h2>
+    <img src="${imgD1}" class="rep-chart">
+  </div>
+
+  <div class="chart-block">
+    <h2>Derivata seconda — d²pH/dV² vs V</h2>
+    <img src="${imgD2}" class="rep-chart">
+  </div>
+
+  <h2>Metodo di Gran</h2>
+  ${granSections || '<p>Nessuna regione di Gran calcolata.</p>'}
+
+  <div style="page-break-after:always; break-after:page;"></div>
+  <div class="rep-data-section" style="page-break-before:always; break-before:page;">
+  <h2>Dati grezzi (V, pH)</h2>
+  <div class="databox">
+  <table class="rep-data">
+    <thead><tr><th>#</th><th>V (mL)</th><th>pH</th></tr></thead>
+    <tbody>
+    ${dataRows}
+    </tbody>
+  </table>
+  </div>
+  </div>
+</body></html>`;
+
+  const w = window.open('', '_blank');
+  if(!w){ alert('Il browser ha bloccato la nuova finestra. Consenti i popup per generare il report.'); return; }
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+}
+
+// init
+renderTable();
+drawMainChart();
+</script>
+<div style="position:fixed; bottom:6px; right:10px; font-size:11px; color:#5a6072; opacity:0.7; pointer-events:none; z-index:9999;">Sviluppatore: P. Scordino</div>
+</body>
+</html>
