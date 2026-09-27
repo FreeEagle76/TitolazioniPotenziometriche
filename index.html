@@ -436,9 +436,14 @@ const LIGHT_THEME = {
 };
 
 function renderChartCore(ctx, W, H, series, opts, domain, theme, fontScale=1){
-  const padL=PAD.l*fontScale, padR=PAD.r*fontScale, padT=PAD.t*fontScale, padB=PAD.b*fontScale;
-  const plotW = W - padL - padR, plotH = H - padT - padB;
   const {xmin, xmax, ymin, ymax} = domain;
+  // Se i valori dell'asse Y sono troppo piccoli per 2 decimali fissi (es. G del metodo di
+  // Gran, spesso ~1e-4/1e-3), servono etichette in notazione scientifica ("1.23e-4"), più
+  // larghe di "0.00": si riserva più margine sinistro per non farle uscire/sovrapporre.
+  const maxAbsY = Math.max(Math.abs(ymin), Math.abs(ymax));
+  const useSci = maxAbsY>0 && maxAbsY<0.01;
+  const padL=(useSci ? PAD.l+16 : PAD.l)*fontScale, padR=PAD.r*fontScale, padT=PAD.t*fontScale, padB=PAD.b*fontScale;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
   const f = (px) => Math.round(px*fontScale); // scala font/tratti proporzionalmente alla dimensione target
 
   ctx.clearRect(0,0,W,H);
@@ -449,6 +454,14 @@ function renderChartCore(ctx, W, H, series, opts, domain, theme, fontScale=1){
 
   const X = x => padL + (x-xmin)/(xmax-xmin)*plotW;
   const Y = y => padT + plotH - (y-ymin)/(ymax-ymin)*plotH;
+
+  // Formattazione adattiva per l'asse Y: notazione scientifica se i valori sono troppo
+  // piccoli per 2 decimali fissi (altrimenti mostrerebbero solo "0.00").
+  const yFmt = (v) => {
+    if(v===0) return '0';
+    if(useSci) return v.toExponential(2);
+    return fmt(v,2);
+  };
 
   // grid
   ctx.strokeStyle = theme.grid; ctx.lineWidth=1*fontScale; ctx.font=`${f(12)}px ${FONT}`; ctx.fillStyle=theme.textAxis;
@@ -463,7 +476,7 @@ function renderChartCore(ctx, W, H, series, opts, domain, theme, fontScale=1){
     const yv = ymin + (ymax-ymin)*i/ny;
     const py = Y(yv);
     ctx.beginPath(); ctx.moveTo(padL,py); ctx.lineTo(padL+plotW,py); ctx.stroke();
-    ctx.fillText(fmt(yv,2), padL-f(36), py+f(4));
+    ctx.fillText(yFmt(yv), padL-f(useSci ? 50 : 36), py+f(4));
   }
   // axes
   ctx.strokeStyle=theme.axis; ctx.lineWidth=1.2*fontScale;
