@@ -839,8 +839,8 @@ function renderGranBlock(id){
     </div>
     <label>Tipo di eccesso nel tratto selezionato</label>
     <select onchange="setGranType('${id}', this.value)">
-      <option value="acid" ${b.type==='acid'?'selected':''}>Eccesso di acido (dopo un punto equivalente) — G = (V₀+V)·10^(−pH)</option>
-      <option value="base" ${b.type==='base'?'selected':''}>Eccesso di base (prima di un punto equivalente) — G = (V₀+V)·10^(pH−14)</option>
+      <option value="acid" ${b.type==='acid'?'selected':''}>Eccesso di acido forte (tratto in cui [H⁺] è in eccesso) — G = (V₀+V)·10^(−pH)</option>
+      <option value="base" ${b.type==='base'?'selected':''}>Eccesso di base forte (tratto in cui [OH⁻] è in eccesso) — G = (V₀+V)·10^(pH−14)</option>
     </select>
     <label>Seleziona i punti del tratto lineare (min. 3)</label>
     <div>${chipsHtml}</div>
