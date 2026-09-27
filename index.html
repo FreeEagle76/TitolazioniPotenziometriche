@@ -920,7 +920,7 @@ function updateSummary(){
     (localMaxima.length>1
       ? localMaxima.map(p=>fmt(p.V,3)+' mL').join(', ')
       : fmt((localMaxima[0]||d1[0]).V,3) + ' mL') + '</span></div>';
-  html += '<div class="kv"><span><b>Derivata seconda</b> — zeri</span><span>' + (crossings.length? crossings.map(v=>fmt(v,3)).join(', ')+' mL' : '—') + '</span></div>';
+  html += '<div class="kv"><span><b>Derivata seconda</b> — zeri</span><span>' + (crossings.length? crossings.map(v=>fmt(v,3)+' mL').join(', ') : '—') + '</span></div>';
 
   Object.keys(granBlocks).forEach(id=>{
     const b = granBlocks[id];
@@ -1071,7 +1071,7 @@ function downloadFullReport(){
   txt += `\nPicchi |dpH/dV| a V = ${localMaxima.map(p=>fmt(p.V,4)).join(', ')} mL\n`;
   txt += `\n\n--- DERIVATA SECONDA (V_mL, d2pH/dV2) ---\n`;
   txt += 'V_mL,d2pH_dV2\n' + d2.map(p=>fmt(p.V,4)+','+fmt(p.d2,6)).join('\n');
-  txt += `\nZeri (punti equivalenti): ${crossings.map(v=>fmt(v,4)).join(', ')||'nessuno'}\n`;
+  txt += `\nZeri (punti equivalenti): ${crossings.length? crossings.map(v=>fmt(v,4)+' mL').join(', ') : 'nessuno'}\n`;
   txt += `\n\n--- FUNZIONE DI GRAN ---\n`;
   Object.keys(granBlocks).forEach(id=>{
     const b = granBlocks[id];
@@ -1171,7 +1171,7 @@ function generatePdfReport(){
   <h2>Riepilogo confronto metodi</h2>
   <table class="rep-summary">
     <tr><td>Derivata prima — max pendenza</td><td><b>${localMaxima.length>1 ? localMaxima.map(p=>fmt(p.V,3)+' mL').join(', ') : fmt(maxAbs.V,3)+' mL'}</b></td></tr>
-    <tr><td>Derivata seconda — zeri</td><td><b>${crossings.length? crossings.map(v=>fmt(v,3)).join(', ')+' mL' : '—'}</b></td></tr>
+    <tr><td>Derivata seconda — zeri</td><td><b>${crossings.length? crossings.map(v=>fmt(v,3)+' mL').join(', ') : '—'}</b></td></tr>
     ${Object.keys(granBlocks).map(id=>{
       const b = granBlocks[id];
       if(!b.result) return '';
